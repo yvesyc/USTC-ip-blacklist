@@ -22,7 +22,7 @@ jobs:
 
       - name: 下载中科大 IP 黑名单
         run: |
-          curl -sS -o ip_blacklist.txt https://blackip.ustc.edu.cn/txt.php?txt
+          curl -sS -o ip_blacklist.txt https://blackip.ustc.edu.cn/list.php?txt
 
       - name: 检查黑名单有效性（防空保护）
         run: |
