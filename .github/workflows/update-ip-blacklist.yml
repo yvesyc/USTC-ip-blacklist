@@ -1,33 +1,62 @@
-name: Update USTC IP Blacklist
+name: 更新中科大 IP 黑名单
+
 on:
   schedule:
-    - cron: '0 0 * * *'     # 每天 UTC 00:00 触发:contentReference[oaicite:4]{index=4}
-  workflow_dispatch:       # 支持手动触发
+    - cron: '0 1 * * *'     # 每天北京时间 09:00（UTC 01:00）
+  workflow_dispatch:
+
 permissions:
-  contents: write          # 允许写入仓库内容（用于 git push）:contentReference[oaicite:5]{index=5}
+  contents: write
+
 jobs:
   update-blacklist:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: Download USTC IP blacklist
+      - name: 显示当前 UTC 和北京时间
         run: |
-          curl -sS -o ip_blacklist.txt https://blackip.ustc.edu.cn/list.php?txt
+          echo "当前 UTC 时间: $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "当前北京时间: $(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
 
-      - name: Configure Git author
+      - name: 下载中科大 IP 黑名单
+        run: |
+          curl -sS -o ip_blacklist.txt https://blackip.ustc.edu.cn/txt.php?txt
+
+      - name: 检查黑名单有效性（防空保护）
+        run: |
+          line_count=$(wc -l < ip_blacklist.txt)
+          echo "下载的 IP 黑名单行数: $line_count"
+          if [ "$line_count" -lt 10 ]; then
+            echo "❌ 黑名单行数异常，终止流程"
+            cat ip_blacklist.txt
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="⚠️ USTC IP 黑名单更新失败\n原因: 行数异常 (${line_count} 行)\n请检查源站状态或手动核查。"
+            exit 1
+          fi
+
+      - name: 配置 Git 用户信息
         run: |
           git config user.name "yvesyc"
           git config user.email "yvesyc@hotmail.com"
 
-      - name: Commit and push changes if any
+      - name: 提交变更（如果有）
         run: |
-          # 检查 ip_blacklist.txt 是否有更改
           if git diff --quiet --exit-code ip_blacklist.txt; then
-            echo "No changes in ip_blacklist.txt, skipping commit"
+            echo "无变化，跳过提交"
           else
             git add ip_blacklist.txt
-            git commit -m "Update USTC IP blacklist"
+            git commit -m "更新 USTC IP 黑名单"
             git push origin main
+
+            commit_hash=$(git rev-parse HEAD)
+            commit_url="https://github.com/${{ github.repository }}/commit/$commit_hash"
+            line_count=$(wc -l < ip_blacklist.txt)
+            commit_time=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')
+
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="✅ USTC IP 黑名单已更新\n提交时间: $commit_time (北京时间)\n行数: $line_count\n提交链接: $commit_url"
           fi
