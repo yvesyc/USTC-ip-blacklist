@@ -14,7 +14,7 @@ jobs:
 
       - name: Download USTC IP blacklist
         run: |
-          curl -sS -o ip_blacklist.txt https://blackip.ustc.edu.cn/txt.php
+          curl -sS -o ip_blacklist.txt https://blackip.ustc.edu.cn/list.php?txt
 
       - name: Configure Git author
         run: |
