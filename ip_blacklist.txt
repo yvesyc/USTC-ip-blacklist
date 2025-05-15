@@ -19,7 +19,7 @@
 <a href=sshrawlist.php?s=t>SSHD日志</a> 
 <a href=intro.php>列表介绍</a> 
 以下IP被加入本黑名单，如需解封请发信:james@ustc.edu.cn  
-您的IP地址:20.43.247.76<hr>
+您的IP地址:74.249.7.211<hr>
 
 <a href=list.php?txt target=_blank>IP黑名单文本格式列表</a><p>
 <a href=dnsblackip.php?txt target=_blank>DNS客户黑名单文本格式列表</a><p>
