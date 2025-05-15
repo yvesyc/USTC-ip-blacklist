@@ -1,40 +1,40 @@
 # .github/workflows/update-ip-blacklist.yml
-name: Update USTC IP Blacklist
+name: 更新中科大 IP 黑名单
 
 on:
   schedule:
-    - cron: '0 0 * * *'      # every day at 00:00 UTC
-  workflow_dispatch:        # allow manual runs
+    - cron: '0 0 * * *'      # 每日 00:00 UTC（即北京时间 09:00）
+  workflow_dispatch:        # 支持手动触发
 
 permissions:
-  contents: write           # allow committing back
+  contents: write           # 赋予写入权限
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
+      - name: 检出代码
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Download USTC IP blacklist
+      - name: 下载中科大 IP 黑名单
         run: |
           curl -fsSL https://blackip.ustc.edu.cn/txt.php -o ip_blacklist.txt
 
-      - name: Commit if changed
+      - name: 提交变更（若有） 
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "yvesyc"
+          git config user.email "yvesyc@hotmail.com"
           if ! git diff --quiet; then
             git add ip_blacklist.txt
-            git commit -m "Update USTC IP blacklist"
+            git commit -m "更新 USTC IP 黑名单"
           else
-            echo "No changes to commit"
+            echo "无更新，跳过提交"
           fi
 
-      - name: Push changes
+      - name: 推送到仓库
         uses: ad-m/github-push-action@v0.8.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
