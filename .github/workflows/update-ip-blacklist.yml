@@ -63,9 +63,9 @@ jobs:
           line_count=$(wc -l < ip_blacklist.txt)
 
           message="✅ USTC IP 黑名单已更新
-提交时间: $commit_time（北京时间）
-行数: $line_count
-提交链接: $commit_url"
+          提交时间: $commit_time（北京时间）
+          行数: $line_count
+          提交链接: $commit_url"
 
           # 发送 Telegram 通知
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
